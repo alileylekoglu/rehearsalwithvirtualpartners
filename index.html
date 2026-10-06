@@ -34,7 +34,8 @@ h1 em,h2 em,h3 em,.h1 em,.h2 em,.ld-t em,#inter .t em{font-weight:300}
 
 /* ---------- the room ---------- */
 #room{position:fixed;inset:0;display:block;width:100%;height:100%;filter:contrast(1.04) saturate(.92) brightness(1.08)}
-#loader{position:fixed;inset:0;z-index:20;background-color:#060707;color:var(--light);overflow:hidden;transition:opacity .9s ease .35s,visibility 0s linear 1.3s}
+.graded #room{filter:none}
+#loader{position:fixed;inset:0;z-index:20;background-color:rgba(6,7,7,.996);color:var(--light);overflow:hidden;transition:opacity .9s ease .35s,visibility 0s linear 1.3s}
 #loader.out{opacity:0;visibility:hidden;pointer-events:none}
 #loader{--p:0}
 .rh-min{display:none}
@@ -72,14 +73,31 @@ h1 em,h2 em,h3 em,.h1 em,.h2 em,.ld-t em,#inter .t em{font-weight:300}
 #loader.out .pb-flash{animation:none;opacity:0}
 .pb-rig{transition:opacity 1.4s ease 1s,transform 2.4s cubic-bezier(.45,0,.2,1)}
 #loader.out:not(.handoff) .pb-rig{opacity:0;transform:translateY(-4%) scaleX(.82);transform-origin:68% 0}
-/* hand-off: the follow-spot swings onto the mark of the real lamp on the 3D rig, then the house dissolves around that same light */
-#loader.handoff{transition:background-color 1.3s cubic-bezier(.45,0,.25,1) 1.2s,opacity .8s ease 2.3s,visibility 0s linear 3.1s}
-#loader.handoff .pb-rig{transition:opacity 1.2s ease 1.6s}
+/* hand-off: the camera pushes into the pool of light, the light blooms over the frame,
+   and the 3D stage is found inside that same light. Only transform and opacity move, so it stays smooth while the room renders */
+#loader.handoff{transition:background-color .35s linear 1.2s,opacity .3s linear 2.9s,visibility 0s linear 3.2s}
+#loader.handoff::before{opacity:0;transition:opacity .6s}
+#loader.lit .pb-rig,#loader.ready .pb-t span i,#loader.ready .pb-top,#loader.ready .pb-k,#loader.ready .pb-c,#loader.ready .pb-row{will-change:transform,opacity}
+#loader.handoff .pb-rig{transition:transform 1.3s cubic-bezier(.55,0,.8,.35),opacity .45s linear 1.05s}
 #loader.handoff.out .pb-rig{opacity:0}
-#loader.handoff .pb-lamp,#loader.handoff .pb-beam,#loader.handoff .pb-pool{transition:left 1.25s cubic-bezier(.65,0,.25,1),top 1.25s cubic-bezier(.65,0,.25,1),bottom 1.25s cubic-bezier(.65,0,.25,1),width 1.25s cubic-bezier(.65,0,.25,1),height 1.25s cubic-bezier(.65,0,.25,1),clip-path 1.25s cubic-bezier(.65,0,.25,1),transform 1.25s cubic-bezier(.65,0,.25,1),filter .8s ease}
-#loader.handoff .pb-lamp{transform-origin:50% 100%}
-#loader.handoff .pb-beam{filter:blur(3px)}
 #loader.handoff .pb-dust{opacity:0;transition:opacity .5s}
+.pb-bloom{position:absolute;inset:0;pointer-events:none;opacity:0;will-change:opacity;
+  background:radial-gradient(circle var(--br,1200px) at var(--bx,68%) var(--by,60%),rgba(255,250,240,1) 0,rgba(255,242,220,.92) 10%,rgba(255,232,200,.55) 26%,rgba(255,224,186,.2) 48%,rgba(255,220,180,.05) 74%,rgba(255,220,180,0) 100%)}
+#loader.ready .pb-bloom{opacity:.003}
+.pb-bloom.wide{background:radial-gradient(circle calc(var(--br,1200px)*1.5) at var(--bx,68%) var(--by,60%),rgba(255,240,214,.75) 0,rgba(255,232,200,.4) 22%,rgba(255,224,186,.12) 50%,rgba(255,220,180,0) 100%)}
+#loader.handoff .pb-bloom{animation:pbBloom 3.2s linear forwards}
+#loader.handoff .pb-bloom.wide{animation-name:pbBloomW}
+/* the hot core arrives first, the wide spill follows and lingers: the light reads as spreading without anything being scaled */
+@keyframes pbBloom{
+  0%{opacity:.003;animation-timing-function:cubic-bezier(.5,0,.85,.45)}
+  36%{opacity:1;animation-timing-function:linear}
+  44%{opacity:1;animation-timing-function:cubic-bezier(.25,.55,.3,1)}
+  90%,100%{opacity:0}}
+@keyframes pbBloomW{
+  0%,12%{opacity:.003;animation-timing-function:cubic-bezier(.45,0,.8,.5)}
+  40%{opacity:1;animation-timing-function:linear}
+  48%{opacity:1;animation-timing-function:cubic-bezier(.25,.55,.3,1)}
+  100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.pb-dust{animation:none}#loader.lit .pb-flash{animation:none}}
 #loader::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 55% at 72% 40%,rgba(241,233,214,.055),transparent 70%);pointer-events:none}
 .pb{position:relative;height:100%;display:grid;grid-template-rows:auto 1fr auto;padding:clamp(20px,4vh,40px) clamp(20px,5vw,72px);max-width:1440px;margin:0 auto}
@@ -156,7 +174,7 @@ h1 em,h2 em,h3 em,.h1 em,.h2 em,.ld-t em,#inter .t em{font-weight:300}
 .no3d #room{display:none}
 .no3d body,.no3d .film{background:radial-gradient(60% 50% at 65% 45%,#1A3328,var(--night))}
 .vignette{position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(120% 90% at 60% 50%,transparent 60%,rgba(0,0,0,.4))}
-.grain{position:fixed;inset:-50%;pointer-events:none;z-index:1;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.2s steps(6) infinite}
+.grain{position:fixed;inset:-10%;pointer-events:none;z-index:1;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.2s steps(6) infinite}
 @keyframes grain{to{transform:translate(8%,-6%)}}
 
 /* ---------- letterbox ---------- */
@@ -166,7 +184,7 @@ h1 em,h2 em,h3 em,.h1 em,.h2 em,.ld-t em,#inter .t em{font-weight:300}
 .bar-top,.bar-bot{transition:transform 1.4s cubic-bezier(.7,0,.2,1)}
 html:not(.entered) .bar-top{transform:translateY(-100%)}
 html:not(.entered) .bar-bot{transform:translateY(100%)}
-.entered .bar-top,.entered .bar-bot{transition-delay:2.2s}
+.entered .bar-top,.entered .bar-bot{transition-delay:2.5s}
 .brand{font-family:var(--display);font-weight:500;letter-spacing:-.01em;font-size:21px;white-space:nowrap}
 .chapter{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chapter b{color:var(--npc)}
@@ -254,10 +272,13 @@ body.looking .l3d{transition:none}
 .beat.on .w{animation:wordIn 1.1s cubic-bezier(.2,.7,.1,1) both;animation-delay:calc(.55s + var(--i)*.075s)}
 .beat.late.on .w{animation-delay:calc(1.8s + var(--i)*.075s)}
 .beat.intro.on .w{animation-delay:calc(1.75s + var(--i)*.07s)}
-@media (min-width:821px){.handoff .beat.intro.on{transition-delay:3s,2.9s,3s,0s}}
-@media (max-width:820px){.handoff .beat.intro.on{transition-delay:3s,2.9s,0s}}
-.handoff .beat.intro.on .rv{animation-delay:calc(3.1s + var(--d,0)*.12s)}
-.handoff .beat.intro.on .w{animation-delay:calc(3.15s + var(--i)*.07s)}
+@media (min-width:821px){.handoff .beat.intro.on{transition-delay:3.2s,3.1s,3.2s,0s}}
+@media (max-width:820px){.handoff .beat.intro.on{transition-delay:3.2s,3.1s,0s}}
+.handoff .beat.intro.on .rv{animation-delay:calc(3.3s + var(--d,0)*.12s)}
+.handoff .beat.intro.on .w{animation-delay:calc(3.35s + var(--i)*.07s);animation-name:wordInLite}
+/* the first caption arrives while the camera is still craning: no blur filters then, only opacity and movement, which the compositor handles alone */
+.handoff .beat.intro{filter:none!important}
+@keyframes wordInLite{from{opacity:0;transform:translateY(.45em)}to{opacity:1;transform:none}}
 @keyframes wordIn{from{opacity:0;transform:translateY(.45em);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
 .snd{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;min-height:36px;display:inline-flex;gap:8px;align-items:center}
 .snd[aria-pressed="true"]{color:var(--night);background:var(--npc);border-color:var(--npc)}
@@ -387,9 +408,15 @@ body.looking .l3d{transition:none}
 @keyframes xfGrow{from{transform:scaleY(0)}}
 .xf-axis{position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-.5px;background:rgba(241,233,214,.16);pointer-events:none}
 .xf-mid{position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed rgba(241,233,214,.16);pointer-events:none}
-.xf-lab{position:absolute;font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;pointer-events:none}
-.xf-lab.a{right:0;top:0;color:var(--asp)}
-.xf-lab.n{left:0;bottom:0;color:var(--npc)}
+.xf-key{display:flex;justify-content:space-between;gap:12px;margin-top:14px;font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.xf-key span{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.xf-key .a{color:var(--asp)}.xf-key .n{color:var(--npc)}
+/* the swatch repeats the plot in miniature: audio rises above the line, the NPC hangs below it */
+.xf-key i{position:relative;flex:none;width:10px;height:16px}
+.xf-key i::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(241,233,214,.35)}
+.xf-key i::after{content:"";position:absolute;left:4px;width:2px;height:6px;border-radius:1px;background:currentColor}
+.xf-key .a i::after{bottom:calc(50% + 2px)}
+.xf-key .n i::after{top:calc(50% + 2px)}
 .xf-head{position:absolute;top:-6px;bottom:-6px;left:calc(12.5% + 75%*var(--v));width:0;pointer-events:none}
 .xf-head::before{content:"";position:absolute;left:-.5px;top:0;bottom:0;width:1px;background:var(--light);opacity:.7}
 .xf-cap{position:absolute;left:-8px;top:50%;width:16px;height:30px;margin-top:-15px;border-radius:3px;background:linear-gradient(#F4E9D4,#C9BB9B);box-shadow:0 0 0 1px rgba(0,0,0,.55),0 6px 16px rgba(0,0,0,.6);transition:transform .2s}
@@ -397,7 +424,7 @@ body.looking .l3d{transition:none}
 .xf.drag .xf-cap{transform:scale(1.12)}
 .xf-in{position:absolute;left:0;top:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
 .xf-in:focus-visible~.xf-plot .xf-cap{outline:2px solid var(--npc);outline-offset:3px}
-.jhint{margin-top:12px;font-size:12.5px;color:var(--muted)}
+.jhint{margin-top:10px;font-size:12.5px;color:var(--muted)}
 .fit{display:flex;flex-direction:column;gap:6px;padding:2px 0 2px 16px;border-left:2px solid var(--c,var(--asp));transition:border-color .5s}
 .fh{display:flex;align-items:center;gap:10px}.fh h3{font-size:24px}
 .fit p{font-size:14.5px;color:var(--muted);max-width:44ch}
@@ -787,9 +814,9 @@ body.looking .l3d{transition:none}
       <div class="xf-plot" id="jt" aria-hidden="true">
         <div class="xf-wave" id="xfWave"></div>
         <span class="xf-axis"></span><span class="xf-mid"></span>
-        <span class="xf-lab a">Script-timed audio</span><span class="xf-lab n">AI-driven NPC</span>
         <span class="xf-head" id="jme"><b class="xf-cap"></b></span>
       </div>
+      <div class="xf-key" aria-hidden="true"><span class="a"><i></i>Script-timed audio</span><span class="n">AI-driven NPC<i></i></span></div>
       <p class="jhint">Slide the fader to walk the actor through rehearsal, or tap a stage.</p>
     </div>
     <div class="fit rv" style="--d:3" id="stageCard">
@@ -6187,24 +6214,31 @@ function ldSet(p,txt){LD.t=Math.max(LD.t,Math.min(100,p));if(txt){const el=$('ld
   if(!LD.ready)LD.t+=(Math.min(94,LD.t+18)-LD.t)*.004; /* gentle creep so it never looks frozen */
   LD.p+=(LD.t-LD.p)*(reduce?1:.07);if(LD.t-LD.p<.3)LD.p=LD.t;
   $('ldFill').style.transform='scaleX('+(LD.p/100).toFixed(4)+')';{const L=$('loader');L.style.setProperty('--p',(LD.p/100).toFixed(3));L.style.setProperty('--fl',LD.p<60&&Math.random()<.06?(.35+Math.random()*.4).toFixed(2):'1');}$('ldPct').innerHTML=Math.round(LD.p)+'<small>%</small>';
-  if(LD.ready&&LD.p>=99.7&&!$('loader').classList.contains('ready')){$('ldText').textContent='Lights up';$('loader').classList.add('ready','lit');setTimeout(()=>{try{$('ldEnter').focus({preventScroll:true});}catch(e){}},400);
+  if(LD.ready&&LD.p>=99.7&&!$('loader').classList.contains('ready')){$('ldText').textContent='Lights up';$('loader').classList.add('ready','lit');if(R&&R.introPoint)aimBloom(R.introPoint());setTimeout(()=>{try{$('ldEnter').focus({preventScroll:true});}catch(e){}},400);
     clearTimeout(LD.auto);LD.auto=setTimeout(()=>{if(!LD.entered)ldEnter($('ldSnd').getAttribute('aria-pressed')==='true');},reduce?600:(RH?1000:2800));}
   requestAnimationFrame(ldTick);})();
 function ldDone(){if(LD.ready)return;LD.ready=true;ldSet(100);}
 function ldEnter(withSound){if(LD.entered)return;LD.entered=true;document.documentElement.classList.add('entered');LD.done=true;
   if(withSound&&typeof SND!=='undefined'&&!SND.on){$('snd').click();}
+  /* the caption must know about the hand-off before its scene starts, or it fades in under the light */
+  const h0=/^#scene(\d+)$/.exec(location.hash||''),b0=beats[Math.max(0,Math.min(beats.length-1,h0?(+h0[1]-1):0))];
+  if(R&&!reduce&&!RH&&R.lightMatch&&b0&&b0.dataset.shot==='alone')document.documentElement.classList.add('handoff');
   begin();
-  /* the loader's light is the same lamp that lights the empty stage: ask the room where it lands, then swing the spot onto it */
-  const m=R&&!reduce&&R.lightMatch?R.lightMatch():null;if(m)handoff(m);
+  /* the loader's light is the same lamp that lights the empty stage: push into it and come out inside the room */
+  const m=document.documentElement.classList.contains('handoff')?R.lightMatch():null;if(m)handoff(m);
+  LD.calm=performance.now()+(m?4000:0);
   $('loader').classList.add('out');}
-function handoff(m){const L=$('loader'),q=s=>L.querySelector(s),px=v=>Math.round(v)+'px';
+['wide',''].forEach(c=>{const b=document.createElement('div');b.className='pb-bloom '+c;b.setAttribute('aria-hidden','true');$('loader').appendChild(b);});
+function aimBloom(p){const L=$('loader');if(!p||LD.entered)return;
+  L.style.setProperty('--bx',Math.round(p.px)+'px');L.style.setProperty('--by',Math.round(p.py)+'px');
+  L.style.setProperty('--br',Math.round(Math.hypot(window.innerWidth,window.innerHeight)*.75)+'px');}
+window.addEventListener('resize',()=>{if(R&&R.introPoint)aimBloom(R.introPoint());});
+function handoff(m){const L=$('loader'),rig=L.querySelector('.pb-rig'),r=L.querySelector('.pb-pool').getBoundingClientRect();
+  /* tilt toward the pool of light, carrying it to where the stage's own pool sits in the first 3D frame, while the light blooms */
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  if(!L.style.getPropertyValue('--bx'))aimBloom(m);
   L.classList.add('handoff');document.documentElement.classList.add('handoff');
-  const lamp=q('.pb-lamp'),beam=q('.pb-beam'),pool=q('.pb-pool');
-  const W=Math.max(60,m.w*2.1),H=Math.max(60,m.py-m.ly),tx=50+(m.lx-m.px)/W*100,tw=Math.max(1.2,Math.min(8,m.lr/W*100));
-  lamp.style.left=px(m.lx);lamp.style.top=px(m.ly-26);lamp.style.transform='scale('+Math.max(.35,Math.min(1.1,m.lr*2.6/46)).toFixed(3)+')';
-  beam.style.left=px(m.px);beam.style.top=px(m.ly);beam.style.width=px(W);beam.style.height=px(H);
-  beam.style.clipPath='polygon('+(tx-tw).toFixed(2)+'% 0,'+(tx+tw).toFixed(2)+'% 0,100% 100%,0 100%)';
-  pool.style.left=px(m.px);pool.style.bottom=px(window.innerHeight-m.py-m.h*.7);pool.style.width=px(W*1.5);pool.style.height=px(Math.max(18,m.h*1.4));}
+  rig.style.transform='translate('+Math.round(m.px-cx)+'px,'+Math.round(m.py-cy)+'px)';}
 function to2D(msg){document.documentElement.classList.add('no3d');R=null;ldDone();if(msg){const n=$('notice');n.textContent=msg;n.hidden=false;setTimeout(()=>n.hidden=true,7000);}}
 $('ldEnter').addEventListener('click',()=>ldEnter($('ldSnd').getAttribute('aria-pressed')==='true'));
 function sheet(down){const H=document.documentElement;const b=beats[cur];
@@ -6487,7 +6521,10 @@ function buildRoom(){
   const N=small?220:500,pg=new THREE.BufferGeometry(),pp=new Float32Array(N*3);
   for(let k=0;k<N;k++){pp[k*3]=(Math.random()-.5)*8;pp[k*3+1]=Math.random()*5;pp[k*3+2]=(Math.random()-.5)*5;}
   pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
-  const dust=new THREE.Points(pg,new THREE.PointsMaterial({color:0xFFF4DD,size:.022,transparent:true,opacity:.45,depthWrite:false}));scene.add(dust);
+  /* round, soft-edged motes: the ones that drift close to the lens read as out-of-focus bokeh, not squares */
+  const dotTex=(()=>{const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d'),g=x.createRadialGradient(16,16,0,16,16,16);
+    g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.45,'rgba(255,255,255,.9)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,32,32);return new THREE.CanvasTexture(c);})();
+  const dust=new THREE.Points(pg,new THREE.PointsMaterial({color:0xFFF4DD,size:.028,map:dotTex,transparent:true,opacity:.5,depthWrite:false}));scene.add(dust);
 
   /* ---------- smoothed state ---------- */
   const S={cam:{p:new THREE.Vector3(0,7,13),l:new THREE.Vector3(0,1,0)},camT:{p:new THREE.Vector3(0,7,13),l:new THREE.Vector3(0,1,0)},
@@ -6535,12 +6572,21 @@ function buildRoom(){
     set({actor:1,npc:0,vsp:0,asp:0,script:0,convai:0,empty:0,table:0,page:0});S.spotPT=0;S.ambT=.12;layoutCrowd('hide');S.orbit=false;S.fp=false;
     S.spotAT=.55;S.beat=e=>{S.spotAT=walk.actor?.55:1;};
     if(S.intro){/* lights up on an empty stage: the lamp already sits on the mark, the actor walks into its pool */
-      S.mark={x:.2,z:0};S.spotA=S.spotAT=1;S.haze=1;S.opT.actor=0;S.op.actor=0;spA.x=S.mark.x*.85;spA.ready=true;
-      S.beat=e=>{S.spotAT=1;if(e>.15)S.opT.actor=1;};}};
-  /* the establishing frame of the intro is held still, so the loader's light can be laid exactly over this one */
-  const HOLD=2.0;
-  function introSnap(){const fit=(!narrow&&S.capSide)?1.16:1;S.offK=fit>1?1:0;resize();S.fovBump=0;
-    camera.fov=Math.max(14,Math.min(100,(S.fovT||40)*fit));camera.updateProjectionMatrix();}
+      S.mark={x:MARK.x,z:MARK.z};S.spotA=S.spotAT=1;S.haze=1;S.opT.actor=0;S.op.actor=0;spA.x=S.mark.x*.85;spA.ready=true;
+      walkIn('actor',[-3.6,0,-1.7],[.2,0,0],1.5);S.beat=e=>{S.spotAT=1;if(e>2)S.opT.actor=1;};}};
+  /* the intro starts inside the beam, looking down its length at the pool on the floor; the clock waits for the loader's bloom to peak */
+  const HOLD=1.25,MARK={x:.2,z:0};
+  /* where the stage's pool lands in the intro's first frame, worked out on a spare camera with the same lens, frame and pose */
+  function introPoint(){const w=window.innerWidth,h=window.innerHeight,lp=h<=520&&w>h,nar=w<=820&&!lp;
+    const c=new THREE.PerspectiveCamera(Math.max(14,Math.min(100,40*(nar?1.26:1.16))),w/h,.05,60);
+    if(nar)c.setViewOffset(w,h,0,h*.26,w,h);else if(lp)c.setViewOffset(w,h,-w*.24,0,w,h);else c.setViewOffset(w,h,-Math.min(w*.26,Math.min(560,w*.46)*.5+10),0,w,h);
+    c.position.set(MARK.x*.9,3.4,MARK.z+1.5);c.lookAt(MARK.x,0,MARK.z);c.updateMatrixWorld(true);c.updateProjectionMatrix();
+    const p=new THREE.Vector3(MARK.x,0,MARK.z).project(c);return {px:(p.x+1)/2*w,py:(1-p.y)/2*h};}
+  function introSnap(){const fit=(!narrow&&S.capSide)?1.16:1;S.offK=fit>1?1:0;frameView();S.fovBump=0;
+    camera.fov=Math.max(14,Math.min(100,(S.fovT||40)*fit));camera.updateProjectionMatrix();
+    const mk=S.mark;S.cam.p.set(mk.x*.9,3.4,mk.z+1.5);S.cam.l.set(mk.x,0,mk.z);
+    /* then a crane move: up and back out of the light, settling on the scene's own shot */
+    if(S.fly){S.fly.p0.copy(S.cam.p);S.fly.l0.copy(S.cam.l);S.fly.bump=0;S.fly.dur=4.8;S.fly.lift=new THREE.Vector3(0,1.3,2.8);}}
   function lightMatch(){if(!S.mark)return null;
     camera.position.copy(S.cam.p);camera.lookAt(S.cam.l);camera.updateMatrixWorld(true);
     const w=window.innerWidth,h=window.innerHeight,P=v=>{const p=v.clone().project(camera);return [(p.x+1)/2*w,(1-p.y)/2*h];};
@@ -6612,9 +6658,14 @@ function buildRoom(){
     /* the gamma pass would lift the void to grey: give it the linear value of the same near-black */
     renderer.setClearColor(new THREE.Color(0x050506).convertSRGBToLinear(),1);scene.fog.color.copy(new THREE.Color(0x050506).convertSRGBToLinear());
     if(THREE.GammaCorrectionShader){const G=Object.assign({},THREE.GammaCorrectionShader);
-      G.fragmentShader=G.fragmentShader.replace(/gl_FragColor\s*=\s*LinearTosRGB\(\s*tex\s*\);/,'gl_FragColor = LinearTosRGB( tex ); gl_FragColor.rgb += (fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)/255.;');
+      G.fragmentShader=G.fragmentShader.replace(/gl_FragColor\s*=\s*LinearTosRGB\(\s*tex\s*\);/,'gl_FragColor = LinearTosRGB( tex ); vec3 gc=(gl_FragColor.rgb-.5)*1.04+.5; gc=mix(vec3(dot(gc,vec3(.213,.715,.072))),gc,.92)*1.08; gl_FragColor.rgb = gc + (fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)/255.;');
+      /* same grade as the CSS filter on #room (contrast, then saturate, then brightness), done here instead */
+      if(G.fragmentShader.indexOf('vec3 gc=')>0)document.documentElement.classList.add('graded');
       composer.addPass(new THREE.ShaderPass(G));}}
   function resize(){const w=window.innerWidth,h=window.innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h);}
+    frameView();}
+  /* the caption side offsets the camera's frame; this alone is cheap, a full resize reallocates every render target */
+  function frameView(){const w=window.innerWidth,h=window.innerHeight;
     const landPhone=h<=520&&w>h;narrow=w<=820&&!landPhone;
     if(narrow)camera.setViewOffset(w,h,0,h*.26*(S.sheetK==null?1:S.sheetK),w,h);else{const ok=S.offK==null?1:S.offK;if(landPhone)camera.setViewOffset(w,h,-w*.24*ok,0,w,h);else camera.setViewOffset(w,h,-Math.min(w*.26,Math.min(560,w*.46)*.5+10)*ok,0,w,h);}
     camera.updateProjectionMatrix();}
@@ -6926,6 +6977,8 @@ function buildRoom(){
     const m=new THREE.Mesh(new THREE.PlaneGeometry(3.2,3.2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:0,dithering:true}));
     m.rotation.x=-Math.PI/2;m.position.y=.008;scene.add(m);return m;}
   const poolA=pool(),poolP=pool();
+  /* judge the frame rate only while the title is up and the room is ready, or once the intro's hand-off is over */
+  const perfOK=()=>(LD.ready&&!LD.entered)||(LD.done&&performance.now()>(LD.calm||0));
   function frame(){
     const dt=Math.min(clock.getDelta(),.1),t=clock.elapsedTime,k=reduce?1:1-Math.exp(-dt*1.8),kf=reduce?1:1-Math.exp(-dt*4);
     if(S.t0<0)S.t0=t+(S.hold||0);const e=t-S.t0;S.e=e;
@@ -6941,7 +6994,7 @@ function buildRoom(){
     if(S.fly&&!reduce){const F=S.fly;if(F.t0<0){F.t0=t+(F.delay||0);F.f0=F.l0.clone().sub(F.p0).normalize();F.D=Math.max(.6,Math.min(2.2,F.p0.distanceTo(tp)*.3));}
       const u=Math.max(0,Math.min(1,(t-F.t0)/F.dur)),sm=x=>x*x*x*(x*(x*6-15)+10),w=sm(u),wl=sm(Math.min(1,u*1.08));
       /* fly forward through the space, arrive moving along the new line of sight */
-      const c1=F.p0.clone().addScaledVector(F.f0,F.D),dir1=tl.clone().sub(tp).normalize(),c2=tp.clone().addScaledVector(dir1,-F.D*.55);
+      const c1=F.lift?F.p0.clone().add(F.lift):F.p0.clone().addScaledVector(F.f0,F.D),dir1=tl.clone().sub(tp).normalize(),c2=tp.clone().addScaledVector(dir1,-F.D*.55);
       c1.y=Math.max(c1.y,.45);c2.y=Math.max(c2.y,.45);const a=1-w;
       S.cam.p.set(0,0,0).addScaledVector(F.p0,a*a*a).addScaledVector(c1,3*a*a*w).addScaledVector(c2,3*a*w*w).addScaledVector(tp,w*w*w);
       S.cam.l.lerpVectors(F.l0,tl,wl);S.fovBump=Math.sin(Math.PI*u)*F.bump;
@@ -7060,11 +7113,13 @@ function buildRoom(){
     {const showTag=S.tagOK&&S.op.actor>.6&&!speechMe.on&&!S.fp;if(showTag)project(actorTag,actor.position.x,1.98,actor.position.z);actorTag.d.style.opacity=showTag?1:0;}
     tallies.forEach(L=>{if(L.on&&L.key!=='vsp'){const n=arrived[L.key];if(n!==L.n){L.n=n;L.inner.innerHTML='<b>'+n+'</b> '+L.label;}}L.d.style.opacity=L.on?1:0;if(L.on){const p=L.key==='npc'?[2.6,1.5,1.3]:L.key==='asp'?[0,1.4,.9]:L.key==='und'?[-1.3,1.4,1.6]:[-2.6,2.25,-1.2];project(L,...p);}});
     if(!S.perf){S.perf={n:0,t:0,t0:0,last:0,slow:0};}
-    if(S.perf.t<2.5&&LD.done){const now=performance.now();if(!S.perf.t0){S.perf.t0=now;S.perf.last=now;}else{if(now-S.perf.last>120)S.perf.slow++;S.perf.last=now;S.perf.n++;}S.perf.t=(now-S.perf.t0)/1000;if((S.perf.t>=2.5&&S.perf.n/S.perf.t<38)||S.perf.slow>=3){S.perf.t=99;degrade();}}
+    if(S.perf.t<2.5){if(perfOK()){const now=performance.now();if(!S.perf.t0){S.perf.t0=now;S.perf.last=now;}else{if(now-S.perf.last>120)S.perf.slow++;S.perf.last=now;S.perf.n++;}S.perf.t=(now-S.perf.t0)/1000;if((S.perf.t>=2.5&&S.perf.n/S.perf.t<38)||S.perf.slow>=3){S.perf.t=99;degrade();}}
+      else if(S.perf.t0)S.perf={n:0,t:0,t0:0,last:0,slow:0};}
     /* keep watching: if a heavy scene later drops the frame rate, shed effects, then resolution */
-    {const now=performance.now(),P=S.perf2||(S.perf2={t0:now,n:0,step:S.lite?1:0});P.n++;
+    {const now=performance.now(),P=S.perf2||(S.perf2={t0:now,n:0,step:S.lite?1:0});
+      if(!perfOK()){P.t0=now;P.n=0;}else{P.n++;
       if(now-P.t0>2500){const fps=P.n*1000/(now-P.t0);P.t0=now;P.n=0;
-        if(LD.done&&fps<26&&P.step<2){if(P.step===0&&!S.lite)degrade();else{renderer.setPixelRatio(1);resize();}P.step++;}}}
+        if(fps<26&&P.step<2){if(P.step===0&&!S.lite)degrade();else{renderer.setPixelRatio(1);resize();}P.step++;}}}}
     curtainFrame(dt,t);holoFrame(dt,t);
     if(S.lite&&renderer.shadowMap.enabled&&!renderer.shadowMap.autoUpdate&&(++shadowTick%3===0))renderer.shadowMap.needsUpdate=true;
     if(composer)composer.render();else renderer.render(scene,camera);requestAnimationFrame(frame);
@@ -7073,7 +7128,7 @@ function buildRoom(){
 
   return {
     show(name,o){o=o||{};S.stageLit=false;HOLO.on=false;S.holoLook=false;S.capSide=name!=='question';LOOK.zT=1;LOOK.ty=0;LOOK.tp=0;if(name!=='title'&&name!=='curtain'&&CT.vis){clearTimeout(CT.fb);CT.mode='open';CT.openT=1;CT.pass=true;CT.zT=.35;document.documentElement.classList.remove('curtainUp');document.getElementById('curHint').classList.remove('on');}S.mark=null;S.haze=0;S.intro=!!o.intro&&!reduce;S.hold=S.intro?HOLD:0;if(!reduce&&!o.cut)S.fly={t0:-1,delay:S.hold,dur:Math.max(2.6,(o.dur||1.9)+.6),p0:S.cam.p.clone(),l0:S.cam.l.clone(),bump:o.bump!=null?o.bump:3.5};for(const n in walk)delete walk[n];S.t0=-1;S.beat=null;S.path=null;S.tagOK=['alone','question','vsp','asp','npc','themes','stages','conclusion'].includes(name);(W[name]||W.title)();if(S.intro)introSnap();speech.on=false;speechMe.on=false;drawSub('');S.flowT=0;S.cueWait=false;cueState.play=false;tallies.forEach(L=>L.on=(name==='verdict'));},
-    lightMatch,
+    lightMatch,introPoint,
     simMode(m){sim.mode=m;if(!reduce)S.fly={t0:-1,dur:1.8,p0:S.cam.p.clone(),l0:S.cam.l.clone(),bump:2};fpShot(m);},
     curtain:curtainCue,
     zoom(f){if(f===0){LOOK.zT=1;LOOK.ty=0;LOOK.tp=0;}else zoomBy(f);},
@@ -7271,7 +7326,7 @@ function go(k){
   if(shotName==='asp')setTimeout(aspUI,50);
   if(shotName==='themes'){TH.auto=true;syncAuto();setTimeout(()=>{if(curShot()==='themes')showTheme(0);},reduce?100:1400);}else TH.tok++;
   if(shotName==='conclusion'){conReset();const tk=CON.tok;setTimeout(()=>{if(curShot()==='conclusion'&&CON.tok===tk)showCon(0);},reduce?100:(inter?3000:1900));}else CON.tok++;
-  if(ACT1[shotName]&&R){dlgRun(intro?[{wait:2000}].concat(ACT1[shotName]):ACT1[shotName]);if(!SND.on){const b=$('snd');b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}}
+  if(ACT1[shotName]&&R){dlgRun(intro?[{wait:2600}].concat(ACT1[shotName]):ACT1[shotName]);if(!SND.on){const b=$('snd');b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}}
   lock=true;setTimeout(()=>lock=false,reduce?150:1000);
 }
 $('prev').addEventListener('click',()=>go(cur-1));$('next').addEventListener('click',()=>go(cur+1));
